@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LaFruta Copão - Cardápio Digital</title>
+    <style>
+        :root {
+            --bg-dark: #0d0d11;
+            --panel-bg: rgba(22, 22, 28, 0.75);
+            --card-bg: rgba(255, 255, 255, 0.04);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --yellow: #f2c94c;
+            --yellow-hover: #dfb433;
+            --white: #ffffff;
+            --text-muted: #9ca3af;
+            --card-selected: rgba(242, 201, 76, 0.12);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Poppins', 'Segoe UI', Roboto, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background: var(--bg-dark);
+            color: var(--white);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 20px 12px 100px 12px;
+        }
+
+        .wrapper {
+            width: 100%;
+            max-width: 480px;
+            background: var(--panel-bg);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border-radius: 20px;
+            padding: 30px 20px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+            border: 1px solid var(--card-border);
+            position: relative;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 35px;
+        }
+
+        .logo-area {
+            background: rgba(242, 201, 76, 0.1);
+            color: var(--yellow);
+            border: 1px solid rgba(242, 201, 76, 0.3);
+            display: inline-block;
+            padding: 6px 18px;
+            border-radius: 30px;
+            font-weight: 700;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 14px;
+        }
+
+        .header h1 {
+            font-size: 2.1rem;
+            font-weight: 800;
+            line-height: 1.2;
+            letter-spacing: -0.5px;
+        }
+
+        .header h1 span {
+            color: var(--yellow);
+            display: block;
+            font-weight: 900;
+        }
+
+        .header p {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-top: 6px;
+        }
+
+        .info-alert {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--card-border);
+            padding: 14px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            text-align: center;
+            margin-bottom: 25px;
+            color: #e5e7eb;
+            line-height: 1.4;
+        }
+
+        .section {
+            margin-bottom: 32px;
+        }
+
+        .section-title {
+            font-size: 1.1rem;
+            color: var(--white);
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-weight: 600;
+        }
+
+        .section-title span.step {
+            color: var(--yellow);
+            margin-right: 6px;
+            font-weight: 700;
+        }
+
+        .limit-badge {
+            background: rgba(242, 201, 76, 0.15);
+            color: var(--yellow);
+            font-size: 0.7rem;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .limit-badge.required {
+            background: rgba(235, 87, 87, 0.15);
+            color: #eb5757;
+            border: 1px solid rgba(235, 87, 87, 0.2);
+        }
+
+        .options-list { display: flex; flex-direction: column; gap: 10px; }
+        .option-item {
+            display: flex;
+            align-items: center;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            padding: 14px 16px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .option-item input[type="checkbox"], .option-item input[type="radio"] {
+            appearance: none; -webkit-appearance: none;
+            width: 20px; height: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            margin-right: 14px; display: flex; align-items: center; justify-content: center;
+            transition: all 0.2s;
+        }
+        .option-item input[type="checkbox"] { border-radius: 5px; }
+        .option-item input[type="radio"] { border-radius: 50%; }
+        
+        .option-item input[type="checkbox"]:checked, .option-item input[type="radio"]:checked { 
+            background: var(--yellow); border-color: var(--yellow); 
+        }
+        .option-item input[type="checkbox"]:checked::after { content: '✓'; color: #000; font-size: 13px; font-weight: 900; }
+        .option-item input[type="radio"]:checked::after { content: ''; width: 8px; height: 8px; background: #000; border-radius: 50%; }
+        
+        .option-text { font-size: 1rem; color: #e5e7eb; }
+        .option-item.active { border-color: var(--yellow); background: var(--card-selected); }
+        .option-item.active .option-text { color: var(--yellow); font-weight: 500; }
+
+        .qty-container {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 12px; padding: 14px 16px;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .qty-controls { display: flex; align-items: center; gap: 16px; }
+        .qty-btn {
+            width: 36px; height: 36px; border-radius: 50%;
+            border: 1px solid var(--yellow); background: transparent;
+            color: var(--yellow); font-size: 1.3rem; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: 0.2s;
+        }
+        .qty-btn:hover { background: rgba(242, 201, 76, 0.1); }
+        .qty-number { font-size: 1.2rem; font-weight: 700; }
+
+        .btn-add-cart {
+            display: block; width: 100%; background: var(--yellow);
+            color: #000; border: none; padding: 16px;
+            font-size: 1rem; font-weight: 600; border-radius: 12px;
+            cursor: pointer; text-transform: uppercase; margin-top: 15px;
+            transition: 0.2s;
+            letter-spacing: 0.5px;
+        }
+        .btn-add-cart:hover { background: var(--yellow-hover); }
+
+        .input-group {
+            display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px;
+        }
+        .input-group label { font-size: 0.85rem; color: var(--text-muted); }
+        .input-group input, .input-group select {
+            background: rgba(255, 255, 255, 0.03); border: 1px solid var(--card-border);
+            padding: 12px; border-radius: 10px; color: white; font-size: 0.95rem;
+            transition: 0.2s;
+        }
+        .input-group select option { background: #121216; color: white; }
+        .input-group input:focus, .input-group select:focus { border-color: var(--yellow); outline: none; background: rgba(255, 255, 255, 0.05); }
+
+        .cart-preview-title { font-size: 1.15rem; color: var(--yellow); margin-bottom: 12px; font-weight: 600; }
+        .cart-items-list { margin-bottom: 15px; }
+        .cart-item-row {
+            background: rgba(255,255,255,0.02); padding: 12px 14px; border-radius: 10px;
+            margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;
+            font-size: 0.9rem; border: 1px solid var(--card-border); border-left: 3px solid var(--yellow);
+        }
+        .btn-remove-item {
+            background: transparent; border: none; color: #ef4444; cursor: pointer; font-size: 0.8rem; margin-top: 4px;
+        }
+
+        .summary-card {
+            background: rgba(255, 255, 255, 0.01);
+            border-radius: 16px; padding: 20px; margin-top: 35px;
+            border: 1px solid var(--card-border);
+        }
+        .summary-line { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.9rem; color: var(--text-muted); }
+        .total-line { font-size: 1.5rem; font-weight: 700; color: var(--yellow); margin-top: 12px; border-top: 1px dashed var(--card-border); padding-top: 12px; }
+
+        .btn-whatsapp {
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            width: 100%; background: #25d366; color: var(--white); border: none;
+            padding: 16px 20px; font-size: 1.1rem; font-weight: 600; border-radius: 12px;
+            cursor: pointer; margin-top: 20px; text-transform: uppercase;
+            box-shadow: 0 4px 14px rgba(37, 211, 102, 0.2);
+            transition: 0.2s;
+        }
+        .btn-whatsapp:hover { background: #1ebd57; }
+        .btn-whatsapp svg { width: 22px; height: 22px; fill: currentColor; }
+
+        .floating-cart-bar {
+            position: fixed; bottom: 0; left: 0; right: 0;
+            background: var(--yellow); color: #000;
+            padding: 14px; text-align: center; font-weight: 600;
+            box-shadow: 0 -10px 30px rgba(0,0,0,0.5); z-index: 999;
+            display: flex; justify-content: center; gap: 15px; align-items: center;
+            font-size: 0.95rem;
+        }
+        .floating-cart-bar a {
+            background: #000; color: white; padding: 4px 14px;
+            border-radius: 20px; text-decoration: none; font-size: 0.8rem; font-weight: 500;
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<div class="wrapper">
+    <div class="header">
+        <div class="logo-area">LaFruta Copão</div>
+        <h1>Menu <span>Premium</span></h1>
+        <p>Drinks no Copo de 550ml (300ml Líquido + Gelo) • Com Vodka 🔞</p>
+    </div>
+
+    <div class="info-alert">
+        🛵 <b>Taxa de Entrega:</b> R$ 3,00 para 1 unidade.<br>Pedindo 2 ou mais copões a entrega é <b>GRÁTIS</b>!
+    </div>
+
+    <!-- MONTAGEM DO COPÃO -->
+    <div style="background: rgba(255,255,255,0.01); padding: 18px; border-radius: 16px; border: 1px solid var(--card-border);">
+        <h2 style="font-size: 1.1rem; color: var(--white); margin-bottom: 2px; text-align: center; font-weight: 600;">🍹 Monte seu Copão</h2>
+        <p style="text-align: center; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 6px;">Volume Total: 550ml (300ml mix líquido + gelo)</p>
+        <p style="text-align: center; color: var(--yellow); font-weight: 700; font-size: 1.3rem; margin-bottom: 20px;">R$ 12,00</p>
+
+        <!-- 1. SABOR DO DRINK -->
+        <div class="section">
+            <div class="section-title"><span><span class="step">1.</span>Sabor do Drink</span></div>
+            <div class="options-list">
+                <label class="option-item" onclick="selectSabor(this)">
+                    <input type="radio" name="sabor" value="Melancia">
+                    <span class="option-text">Melancia</span>
+                </label>
+                <label class="option-item" onclick="selectSabor(this)">
+                    <input type="radio" name="sabor" value="Maçã Verde">
+                    <span class="option-text">Maçã Verde</span>
+                </label>
+                <label class="option-item" onclick="selectSabor(this)">
+                    <input type="radio" name="sabor" value="Tradicional">
+                    <span class="option-text">Tradicional</span>
+                </label>
+            </div>
+        </div>
+
+        <!-- 2. GELOS SABORIZADOS (OBRIGATÓRIO) -->
+        <div class="section">
+            <div class="section-title">
+                <span><span class="step">2.</span>Gelos Saborizados</span>
+                <span class="limit-badge required">Obrigatório</span>
+            </div>
+            <div class="options-list">
+                <label class="option-item" onclick="toggleOptionItem(this)"><input type="checkbox" name="gelo" value="Côco"><span class="option-text">Côco</span></label>
+                <label class="option-item" onclick="toggleOptionItem(this)"><input type="checkbox" name="gelo" value="Melancia"><span class="option-text">Melancia</span></label>
+                <label class="option-item" onclick="toggleOptionItem(this)"><input type="checkbox" name="gelo" value="Limão"><span class="option-text">Limão</span></label>
+                <label class="option-item" onclick="toggleOptionItem(this)"><input type="checkbox" name="gelo" value="Morango"><span class="option-text">Morango</span></label>
+            </div>
+        </div>
+
+        <!-- 3. QUANTIDADE DESTE COPÃO -->
+        <div class="section" style="margin-bottom: 15px;">
+            <div class="section-title"><span><span class="step">3.</span>Quantidade</span></div>
+            <div class="qty-container">
+                <span class="qty-label" style="color: var(--text-muted); font-size: 0.95rem;">Deste mesmo modelo:</span>
+                <div class="qty-controls">
+                    <button class="qty-btn" onclick="changeQuantity(-1)">−</button>
+                    <span class="qty-number" id="qty-display">1</span>
+                    <button class="qty-btn" onclick="changeQuantity(1)">+</button>
+                </div>
+            </div>
+        </div>
+
+        <button class="btn-add-cart" onclick="addToCart()">🛒 Adicionar ao Carrinho</button>
+    </div>
+
+    <!-- MEU CARRINHO -->
+    <div class="summary-card" id="cart-section" style="display: none; margin-top: 35px;">
+        <div class="cart-preview-title">🛍️ Itens no seu Pedido</div>
+        <div class="cart-items-list" id="cart-items-container"></div>
+
+        <!-- DADOS DE ENTREGA -->
+        <div style="margin-top: 25px; border-top: 1px solid var(--card-border); padding-top: 20px;">
+            <div class="cart-preview-title" style="font-size: 1.05rem;">📍 Dados para a Entrega</div>
+            <div class="input-group">
+                <label>Seu Nome *</label>
+                <input type="text" id="delivery-name" placeholder="Ex: João Silva">
+            </div>
+            <div class="input-group">
+                <label>Endereço e Número *</label>
+                <input type="text" id="delivery-address" placeholder="Ex: Rua Floriano Peixoto, 123">
+            </div>
+            <div class="input-group">
+                <label>Bairro *</label>
+                <input type="text" id="delivery-neighborhood" placeholder="Ex: Centro">
+            </div>
+            <div class="input-group">
+                <label>Ponto de Referência</label>
+                <input type="text" id="delivery-reference" placeholder="Ex: Próximo à praça">
+            </div>
+        </div>
+
+        <!-- FORMA DE PAGAMENTO -->
+        <div style="margin-top: 20px; border-top: 1px solid var(--card-border); padding-top: 20px;">
+            <div class="cart-preview-title" style="font-size: 1.05rem;">💵 Forma de Pagamento</div>
+            <div class="input-group">
+                <label>Como deseja pagar? *</label>
+                <select id="payment-method" onchange="handlePaymentChange()">
+                    <option value="">Selecione...</option>
+                    <option value="Pix">Pix</option>
+                    <option value="Crédito">Cartão de Crédito</option>
+                    <option value="Débito">Cartão de Débito</option>
+                    <option value="Espécie">Espécie (Dinheiro)</option>
+                </select>
+            </div>
+            
+            <div id="change-group" class="input-group" style="display: none;">
+                <label>Precisa de troco? Para quanto?</label>
+                <input type="text" id="payment-change" placeholder="Ex: Troco para R$ 50 ou Não preciso">
+            </div>
+        </div>
+
+        <!-- RESUMO DE VALORES -->
+        <div style="margin-top: 25px;">
+            <div class="summary-line"><span>Produtos:</span><span id="summary-subtotal" style="color: var(--white)">R$ 0,00</span></div>
+            <div class="summary-line"><span>Taxa de Entrega:</span><span id="summary-delivery" style="color: var(--white)">R$ 0,00</span></div>
+            <div class="summary-line total-line"><span>Total Geral:</span><span id="summary-total">R$ 0,00</span></div>
+        </div>
+
+        <button class="btn-whatsapp" onclick="sendToWhatsApp()">
+            <svg viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397 0 12.008 0c3.202.001 6.212 1.248 8.477 3.514 2.266 2.265 3.51 5.276 3.509 8.48-.003 6.654-5.34 12.004-11.952 12.004-.003 0-.005 0-.007 0-2.01-.001-3.987-.504-5.748-1.46L0 24zm6.211-3.673l.361.215c1.61.956 3.473 1.46 5.38 1.461h.005c5.548 0 10.063-4.515 10.066-10.066.002-2.69-1.043-5.218-2.944-7.119C17.235 2.926 14.71 1.881 12.01 1.881c-5.552 0-10.067 4.516-10.07 10.067-.001 1.996.525 3.945 1.523 5.674l.232.4-.984 3.595 3.684-.966zM17.43 14.39c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.074-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/></svg>
+            Enviar Pedido via WhatsApp
+        </button>
+    </div>
+</div>
+
+<!-- BARRA FLUTUANTE INFERIOR -->
+<div class="floating-cart-bar" id="floating-bar">
+    <span>🛒 Carrinho: <b id="floating-qty">0</b> copões</span>
+    <a href="#cart-section" id="floating-link" style="display: none;">Ver Pedido ↓</a>
+</div>
+
+<script>
+    const itemPrice = 12.00;
+    let selectedSaborName = "";
+    let quantity = 1;
+    let cart = [];
+
+    function selectSabor(element) {
+        document.querySelectorAll('input[name="sabor"]').forEach(el => el.closest('.option-item').classList.remove('active'));
+        const radio = element.querySelector('input[type="radio"]');
+        radio.checked = true;
+        element.classList.add('active');
+        selectedSaborName = radio.value;
+    }
+
+    function toggleOptionItem(element) {
+        const checkbox = element.querySelector('input[type="checkbox"]');
+        setTimeout(() => {
+            if (checkbox.checked) element.classList.add('active');
+            else element.classList.remove('active');
+        }, 50);
+    }
+
+    function changeQuantity(value) {
+        quantity += value;
+        if (quantity < 1) quantity = 1;
+        document.getElementById('qty-display').innerText = quantity;
+    }
+
+    function handlePaymentChange() {
+        const method = document.getElementById('payment-method').value;
+        const changeGroup = document.getElementById('change-group');
+        if (method === 'Espécie') {
+            changeGroup.style.display = 'flex';
+        } else {
+            changeGroup.style.display = 'none';
+            document.getElementById('payment-change').value = '';
+        }
+    }
+
+    function addToCart() {
+        if (!selectedSaborName) {
+            alert("Por favor, escolha o sabor do seu drink!");
+            return;
+        }
+
+        let gelos = [];
+        document.querySelectorAll('input[name="gelo"]:checked').forEach(el => gelos.push(el.value));
+
+        if (gelos.length === 0) {
+            alert("Por favor, selecione pelo menos 1 opção de gelo saborizado!");
+            return;
+        }
+
+        const cartItem = {
+            tamanho: '550ML',
+            sabor: selectedSaborName,
+            precoUnitario: itemPrice,
+            gelos: gelos,
+            qtd: quantity,
+            subtotal: itemPrice * quantity
+        };
+
+        cart.push(cartItem);
+        resetForm();
+        updateCartUI();
+        alert("Adicionado ao carrinho com sucesso!");
+    }
+
+    function resetForm() {
+        selectedSaborName = "";
+        quantity = 1;
+        document.getElementById('qty-display').innerText = "1";
+        document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+        document.querySelectorAll('input[name="sabor"]').forEach(rb => rb.checked = false);
+        document.querySelectorAll('.option-item').forEach(item => item.classList.remove('active'));
+    }
+
+    function removeItem(index) {
+        cart.splice(index, 1);
+        updateCartUI();
+    }
+
+    function updateCartUI() {
+        const container = document.getElementById('cart-items-container');
+        const cartSection = document.getElementById('cart-section');
+        const floatingQty = document.getElementById('floating-qty');
+        const floatingLink = document.getElementById('floating-link');
+
+        container.innerHTML = "";
+        
+        let totalProdutos = 0;
+        let totalItensContador = 0;
+
+        cart.forEach((item, index) => {
+            totalProdutos += item.subtotal;
+            totalItensContador += item.qtd;
+
+            let descGelos = item.gelos.join(', ');
+
+            container.innerHTML += `
+                <div class="cart-item-row">
+                    <div>
+                        <b>${item.qtd}x Copão ${item.sabor} (550ml)</b><br>
+                        <span style="font-size:0.8rem; color:var(--text-muted)">
+                            Gelos: ${descGelos} | 300ml Líquido + Vodka inc.
+                        </span>
+                    </div>
+                    <div style="text-align:right;">
+                        <span style="font-weight:600; color:var(--yellow)">R$ ${item.subtotal.toFixed(2).replace('.', ',')}</span><br>
+                        <button class="btn-remove-item" onclick="removeItem(${index})">Remover</button>
+                    </div>
+                </div>
+            `;
+        });
+
+        floatingQty.innerText = totalItensContador;
+
+        if (cart.length > 0) {
+            cartSection.style.display = "block";
+            floatingLink.style.display = "inline-block";
+
+            let taxaEntrega = totalItensContador === 1 ? 3.00 : 0.00;
+            let totalGeral = totalProdutos + taxaEntrega;
+
+            document.getElementById('summary-subtotal').innerText = `R$ ${totalProdutos.toFixed(2).replace('.', ',')}`;
+            document.getElementById('summary-delivery').innerText = taxaEntrega === 0 ? "GRÁTIS" : `R$ ${taxaEntrega.toFixed(2).replace('.', ',')}`;
+            document.getElementById('summary-total').innerText = `R$ ${totalGeral.toFixed(2).replace('.', ',')}`;
+        } else {
+            cartSection.style.display = "none";
+            floatingLink.style.display = "none";
+        }
+    }
+
+    function sendToWhatsApp() {
+        if (cart.length === 0) {
+            alert("Seu carrinho está vazio!");
+            return;
+        }
+
+        const nome = document.getElementById('delivery-name').value.trim();
+        const endereco = document.getElementById('delivery-address').value.trim();
+        const bairro = document.getElementById('delivery-neighborhood').value.trim();
+        const referencia = document.getElementById('delivery-reference').value.trim();
+        const formaPagamento = document.getElementById('payment-method').value;
+        const troco = document.getElementById('payment-change').value.trim();
+
+        if (!nome || !endereco || !bairro) {
+            alert("Por favor, preencha o Nome, Endereço e Bairro!");
+            return;
+        }
+
+        if (!formaPagamento) {
+            alert("Por favor, selecione a Forma de Pagamento!");
+            return;
+        }
+
+        let totalProdutos = 0;
+        let totalItensContador = 0;
+        let mensagem = `*Novo Pedido - LaFruta Copão*%0A%0A`;
+        mensagem += `*🛒 ITENS DO PEDIDO:*%0A`;
+
+        cart.forEach((item, index) => {
+            totalProdutos += item.subtotal;
+            totalItensContador += item.qtd;
+            let descGelos = item.gelos.join(', ');
+            
+            mensagem += `${index + 1}. *${item.qtd}x Copão Premium 550ml* Sabor: *${item.sabor}*%0A`;
+            mensagem += `   • Proporção: 300ml Líquido + Gelos Saborizados%0A`;
+            mensagem += `   • Gelos escolhidos: ${descGelos}%0A`;
+            mensagem += `   • Adicional: Vodka Premium 🔞%0A%0A`;
+        });
+
+        let taxaEntrega = totalItensContador === 1 ? 3.00 : 0.00;
+        let totalGeral = totalProdutos + taxaEntrega;
+
+        mensagem += `*📍 DADOS DE ENTREGA:*%0A`;
+        mensagem += `• *Cliente:* ${nome}%0A`;
+        mensagem += `• *Endereço:* ${endereco}%0A`;
+        mensagem += `• *Bairro:* ${bairro}%0A`;
+        if (referencia) mensagem += `• *Referência:* ${referencia}%0A`;
+        mensagem += `%0A`;
+
+        mensagem += `*💵 PAGAMENTO:*%0A`;
+        mensagem += `• *Forma:* ${formaPagamento}%0A`;
+        if (formaPagamento === 'Espécie' && troco) {
+            mensagem += `• *Informações de Troco:* ${troco}%0A`;
+        }
+        mensagem += `%0A`;
+
+        mensagem += `*💰 RESUMO DOS VALORES:*%0A`;
+        mensagem += `• Subtotal: R$ ${totalProdutos.toFixed(2).replace('.', ',')}%0A`;
+        mensagem += `• Entrega: ${taxaEntrega === 0 ? 'GRÁTIS' : `R$ ${taxaEntrega.toFixed(2).replace('.', ',')}`}%0A`;
+        mensagem += `• *TOTAL GERAL:* R$ ${totalGeral.toFixed(2).replace('.', ',')}%0A%0A`;
+        mensagem += `⚠️ *POR FAVOR, MANDE SUA LOCALIZAÇÃO LOGO ABAIXO DA MENSAGEM!* 📍%0A%0A`;
+        mensagem += `_Aguardo a confirmação do pedido!_`;
+
+        window.open(`https://wa.me/558694550572?text=${mensagem}`, '_blank');
+    }
+</script>
+
+</body>
+</html>
