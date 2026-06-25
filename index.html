@@ -35,7 +35,97 @@
             padding: 20px 12px 100px 12px;
         }
 
+        /* TELA DE VERIFICAÇÃO DE IDADE */
+        #age-gate {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #0d0d11;
+            z-index: 10000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .age-gate-box {
+            width: 100%;
+            max-width: 400px;
+            background: rgba(22, 22, 28, 0.95);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            padding: 40px 30px;
+            text-align: center;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
+        }
+
+        .age-gate-logo {
+            background: rgba(242, 201, 76, 0.1);
+            color: var(--yellow);
+            display: inline-block;
+            padding: 8px 20px;
+            border-radius: 30px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 25px;
+        }
+
+        .age-gate-box h2 {
+            font-size: 1.8rem;
+            font-weight: 800;
+            margin-bottom: 12px;
+        }
+
+        .age-gate-box p {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            line-height: 1.5;
+            margin-bottom: 30px;
+        }
+
+        .age-buttons {
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn-age {
+            flex: 1;
+            padding: 16px;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: 0.2s;
+            text-transform: uppercase;
+        }
+
+        .btn-age-yes {
+            background: var(--yellow);
+            color: #000;
+            border: none;
+        }
+
+        .btn-age-yes:hover {
+            background: var(--yellow-hover);
+        }
+
+        .btn-age-no {
+            background: transparent;
+            color: #ef4444;
+            border: 1px solid #ef4444;
+        }
+
+        .btn-age-no:hover {
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        /* CONTEÚDO PRINCIPAL (ESCONDIDO ATÉ VALIDAR) */
         .wrapper {
+            display: none;
             width: 100%;
             max-width: 480px;
             background: var(--panel-bg);
@@ -241,7 +331,7 @@
             background: var(--yellow); color: #000;
             padding: 14px; text-align: center; font-weight: 600;
             box-shadow: 0 -10px 30px rgba(0,0,0,0.5); z-index: 999;
-            display: flex; justify-content: center; gap: 15px; align-items: center;
+            display: none; justify-content: center; gap: 15px; align-items: center;
             font-size: 0.95rem;
         }
         .floating-cart-bar a {
@@ -253,7 +343,21 @@
 </head>
 <body>
 
-<div class="wrapper">
+<!-- GATE DE VERIFICAÇÃO DE IDADE -->
+<div id="age-gate">
+    <div class="age-gate-box">
+        <div class="age-gate-logo">Controle de Acesso</div>
+        <h2>Você tem +18 anos?</h2>
+        <p>Este cardápio contém bebidas alcoólicas premium exclusivas para maiores. Por favor, confirme sua idade para continuar.</p>
+        <div class="age-buttons">
+            <button class="btn-age btn-age-no" onclick="verifyAge(false)">Não</button>
+            <button class="btn-age btn-age-yes" onclick="verifyAge(true)">Sim, tenho</button>
+        </div>
+    </div>
+</div>
+
+<!-- CONTEÚDO DO CARDÁPIO -->
+<div class="wrapper" id="main-content">
     <div class="header">
         <div class="logo-area">LaFruta Copão</div>
         <h1>Menu <span>Premium</span></h1>
@@ -369,6 +473,7 @@
         <div style="margin-top: 25px;">
             <div class="summary-line"><span>Produtos:</span><span id="summary-subtotal" style="color: var(--white)">R$ 0,00</span></div>
             <div class="summary-line"><span>Taxa de Entrega:</span><span id="summary-delivery" style="color: var(--white)">R$ 0,00</span></div>
+            <div class="summary-line"><span>Termo de Maioridade:</span><span style="color: #25d366; font-weight: 600;">Confirmado (+18)</span></div>
             <div class="summary-line total-line"><span>Total Geral:</span><span id="summary-total">R$ 0,00</span></div>
         </div>
 
@@ -390,6 +495,18 @@
     let selectedSaborName = "";
     let quantity = 1;
     let cart = [];
+
+    // FUNÇÃO DA TELA DE IDADE - CORRIGIDA!
+    function verifyAge(isOfAge) {
+        if (isOfAge) {
+            document.getElementById('age-gate').style.display = 'none';
+            document.getElementById('main-content').style.display = 'block';
+            document.getElementById('floating-bar').style.display = 'flex';
+        } else {
+            alert("Desculpe, o acesso a este cardápio é proibido para menores de 18 anos.");
+            window.location.href = "https://www.google.com";
+        }
+    }
 
     function selectSabor(element) {
         document.querySelectorAll('input[name="sabor"]').forEach(el => el.closest('.option-item').classList.remove('active'));
@@ -434,7 +551,7 @@
         document.querySelectorAll('input[name="gelo"]:checked').forEach(el => gelos.push(el.value));
 
         if (gelos.length === 0) {
-            alert("Por favor, selecione pelo menos 1 opção de gelo saborizado!");
+            alert("Por favor, selecione pelo menos 1 option de gelo saborizado!");
             return;
         }
 
@@ -544,6 +661,10 @@
         let totalProdutos = 0;
         let totalItensContador = 0;
         let mensagem = `*Novo Pedido - LaFruta Copão*%0A%0A`;
+        
+        mensagem += `🔞 *TERMO DE RESPONSABILIDADE:*%0A`;
+        mensagem += `*-> EU TENHO 18 OU MAIS ANOS* %0A%0A`;
+        
         mensagem += `*🛒 ITENS DO PEDIDO:*%0A`;
 
         cart.forEach((item, index) => {
